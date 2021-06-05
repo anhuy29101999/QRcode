@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<title></title>
+		<script>
+			//判断客户端设备，选择写入meta
+      function init_viewport() {
+        if (navigator.userAgent.indexOf('Android') != -1) {
+          var version = parseFloat(RegExp.$1);
+          if (version > 2.3) {
+            var width =
+              window.outerWidth == 0 ? window.screen.width : window.outerWidth;
+            var phoneScale = parseInt(width) / 500;
+            document.write(
+              '<meta name="viewport" content="width=500, minimum-scale = ' +
+                phoneScale +
+                ', maximum-scale = ' +
+                phoneScale +
+                ', target-densitydpi=device-dpi">'
+            );
+          } else {
+            document.write(
+              '<meta name="viewport" content="width=500, target-densitydpi=device-dpi, user-scalable=0">'
+            );
+          }
+        } else if (navigator.userAgent.indexOf('iPhone') != -1) {
+          var phoneScale = parseInt(window.screen.width) / 500;
+          document.write(
+            '<meta name="viewport" content="width=500, min-height=750, initial-scale=' +
+              phoneScale +
+              ', maximum-scale=' +
+              phoneScale +
+              ', user-scalable=0" /> '
+          ); //0.75   0.82
+        } else {
+          document.write(
+            '<meta name="viewport" content="width=500, height=750, initial-scale=0.64" /> '
+          ); //0.75  0.82
+        }
+      }
+      init_viewport();
+    </script>
+	</head>
+	<script src="http://1.layzz.cn/page/love/static/js/jquery-2.0.3.min.js"></script>
+	<style>
+		body {
+      margin: 0;
+      padding: 0;
+    }
+    .iframe-div {
+      width: 100%;
+      border: none;
+    }
+    .more-btn {
+      position: fixed;
+      cursor: pointer;
+      width: 42px;
+      height: 42px;
+      border: 2px solid white;
+      border-radius: 50%;
+      font-size: 1em;
+      line-height: 40px;
+      text-align: center;
+      z-index: 999;
+      top: 170px;
+      background-color: rgba(0, 0, 0, 0.3);
+      right: 25px;
+    }
+    .more-btn a {
+      cursor: pointer;
+      color: #fff;
+      text-decoration: none;
+    }
+	#img_music{
+		width: 30px;
+		height: 30px;
+		
+	}
+	#div_music{
+		right: 30px;
+	}
+  </style>
+  <link type="text/css" rel="stylesheet" href="http://1.layzz.cn/page//delete/css/theme_public_btn.css" />
+	<body>
+		<iframe id="myframe" class="iframe-div" width="100%" src=""></iframe>
+
+		<div class="div_btn more-btn">
+			<a id="moreLink" href="https://mp.weixin.qq.com/s/2RUcXfdssZbSxibK1E2AvA"><span>更多</span></a>
+		</div>
+
+		<div class="div_btn" id="div_music" onclick="music_switch()">
+			<!-- 音乐按钮部分 -->
+			<audio id="audio_music" autoplay="autoplay" loop="loop">
+				<source type="audio/mpeg" />
+				<!-- 您的浏览器不支持播放音乐 -->
+			</audio>
+		</div>
+	</body>
+	<script>
+
+		const BASE_URL = 'http://wazf.top/page/';
+		//const BASE_URL = './';
+		const frameDom = document.getElementById('myframe');
+		var num = location.pathname.replace(/\//g, '');
+		//num = 1;
+		frameDom.style.height = window.innerHeight - 10 + 'px';
+		$.ajax({
+			// url:
+			// 'https://love.layzz.cn/qrcode/getContentById?source=' +
+			// source +
+			// '&id=' +
+			// num,
+			url: 'https://love.layzz.cn/qrcode/getV2ContentById?source=374595&contentId=' + num,
+			async: false,
+			success: function(res) {
+				console.log(res);
+				tempRes = res;
+
+				localStorage.setItem('templateDate', JSON.stringify(res));
+				document.title = res.data.title;
+				$('#moreLink').attr('href', res.data.link);
+				
+				
+				
+				document.addEventListener('DOMContentLoaded', function () {
+				    function audioAutoPlay() {
+				        var audio_music = document.getElementById('audio_music');
+				        $('#audio_music').attr('src',res.data.music);
+				        audio_music.play();
+				        document.addEventListener("WeixinJSBridgeReady", function () {
+				            audio_music.play();
+				        }, false);
+				    }
+				    audioAutoPlay();
+				});
+				
+				switch (res.data.pageType) {
+					case 1:
+						document.getElementById('myframe').src =
+							BASE_URL + 'letter/letter.html';
+						break;
+					case 2:
+						document.getElementById('myframe').src =
+							BASE_URL + 'love/love.html';
+						break;
+					case 3:
+						document.getElementById('myframe').src =
+							BASE_URL + 'confirm/confirm.html';
+						break;
+					case 4:
+						document.getElementById('myframe').src =
+							BASE_URL + 'delete/delete.html';
+						break;
+				}
+			},
+		});
+	</script>
+	<script type="text/javascript">
+		//控制音乐切换播放暂停
+		var img_music=document.getElementById('img_music');
+		var timeout_music;
+		function music_switch(){ //切换   
+		    clearTimeout(timeout_music);  
+		    if(audio_music.paused){
+		        console.log('switch music to play');
+		        audio_music.play();
+		        audio_record.pause(); //播放音乐时录音一定暂停                
+		        img_music.style.webkitAnimation="music_play_rotate 1s linear infinite";
+		        $(".div_music_tips").html("正播放").show();                
+		        timeout_music=setTimeout(function(){$(".div_music_tips").hide()}, 2500);
+		    }else{
+		        console.log('switch music to paused'); 
+		        audio_music.pause();
+		        // audio_record.play(); //
+		        img_music.style.webkitAnimation="";
+		        $(".div_music_tips").html("已暂停").show();  
+		        timeout_music=setTimeout(function(){$(".div_music_tips").hide()}, 2500); 
+		    } 
+		}
+	</script>
+	<style type="text/css">
+	</style>
+</html>
